@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="TetraCoder: Adaptive Tetrahedral Encoding for Neural Fields. A single adaptive representation for reconstruction, rendering, and local editing.">
+  <meta name="theme-color" content="#16766c">
+  <meta property="og:title" content="TetraCoder: Adaptive Tetrahedral Encoding for Neural Fields">
+  <meta property="og:description" content="Neural fields. Explicit surfaces. Local edits. Explore the paper and interactive results.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="static/images/teaser.webp">
+  <meta name="citation_title" content="TetraCoder: Adaptive Tetrahedral Encoding for Neural Fields">
+  <meta name="citation_author" content="Daniele Della Pietra">
+  <meta name="citation_author" content="Antonella Rech">
+  <meta name="citation_author" content="Nicola Conci">
+  <meta name="citation_author" content="Nicola Garau">
+  <meta name="citation_publication_date" content="2026/11/13">
+  <meta name="citation_pdf_url" content="https://arxiv.org/pdf/2611.18267">
+  <title>TetraCoder — Adaptive Tetrahedral Encoding for Neural Fields</title>
+  <link rel="icon" href="static/images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="static/css/bulma.min.css">
+  <link rel="stylesheet" href="static/css/index.css">
+  <script defer src="static/js/media.js"></script>
+  <script defer src="static/js/comparison-viewer.js"></script>
+  <script defer src="static/js/index.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <nav class="project-nav" aria-label="Main navigation">
+    <a class="wordmark" href="#"><img src="static/images/favicon.svg" alt="" width="26" height="26">TetraCoder</a>
+    <div class="nav-links"><a href="#encoder">Encoder</a><a href="#toy-image">2D fitting</a><a href="#geometry">3D geometry</a><a href="#appearance">Novel views</a><a href="#editing">Editing</a></div>
+  </nav>
+  <main id="main">
+    <section class="hero publication-header">
+      <div class="hero-body"><div class="container is-max-desktop has-text-centered">
+        <h1 class="publication-title"><span class="project-name">TetraCoder</span><span class="paper-title">Adaptive Tetrahedral Encoding<br class="desktop-break"> for Neural Fields</span></h1>
+        <div class="publication-authors">
+          <div class="author"><span class="author-name">Daniele Della Pietra</span><a class="author-email" href="mailto:daniele.dellapietra@unitn.it">daniele.dellapietra@unitn.it</a></div>
+          <div class="author"><span class="author-name">Antonella Rech</span><a class="author-email" href="mailto:antonella.rech@unitn.it">antonella.rech@unitn.it</a></div>
+          <div class="author"><span class="author-name">Nicola Conci</span><a class="author-email" href="mailto:nicola.conci@unitn.it">nicola.conci@unitn.it</a></div>
+          <div class="author"><span class="author-name">Nicola Garau</span><a class="author-email" href="mailto:nicola.garau@unitn.it">nicola.garau@unitn.it</a></div>
+        </div>
+        <p class="affiliation">University of Trento, Italy</p>
+        <div class="publication-links">
+          <a class="button is-dark is-rounded" href="https://arxiv.org/pdf/2611.18267" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6z M14 3v5h4 M9 12h6 M9 16h6"/></svg>Paper</a>
+          <a class="button is-dark is-rounded" href="https://github.com/mmlab-cv/TetraCoder" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 6-6 6 6 6 M16 6l6 6-6 6 M14 3l-4 18"/></svg>Code</a>
+          <a class="button is-rounded" href="#BibTeX">BibTeX</a>
+        </div>
+      </div></div>
+    </section>
+
+    <section class="teaser section-slim" aria-label="Paper teaser">
+      <div class="container is-max-desktop">
+        <figure class="paper-teaser">
+          <img class="teaser-desktop" src="static/images/teaser.webp" width="1840" height="573" alt="Original paper teaser: multiresolution hash encoding, TetraSDF's fixed tetrahedral encoding, and TetraCoder's single adaptive tetrahedral grid" fetchpriority="high">
+          <div class="teaser-mobile" role="img" aria-label="Original paper teaser, three panels: Hash encoding, TetraSDF, and TetraCoder. Scroll horizontally to explore."><img src="static/images/teaser-hash.webp" alt="" width="1000" height="934"><img src="static/images/teaser-tetrahash.webp" alt="" width="1000" height="935"><img src="static/images/teaser-tetracoder.webp" alt="" width="1000" height="955"></div>
+          <figcaption>We present <strong>TetraCoder</strong>, an adaptive tetrahedral encoding for neural fields. Multiresolution hash encoding (<strong>left</strong>) interpolates features on fixed spatial grids at multiple resolutions. Its trilinear interpolation does not produce a piecewise-affine encoding, making analytic mesh extraction impractical. To address that, tetrahedral multiresolution hash encoding (<strong>center</strong>) subdivides these grids into fixed tetrahedra and uses barycentric interpolation to obtain a piecewise-affine encoding. TetraCoder (<strong>right</strong>) instead uses a single-level, hash-free encoding defined on an adaptive tetrahedral volumetric mesh. Combined with a piecewise-affine decoder, this representation enables fast analytic mesh retrieval. Unlike other encodings, TetraCoder supports novel view synthesis, scene reconstruction, 3D appearance and geometry editing within a unified framework.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section abstract-section" id="abstract"><div class="container text-container"><h2 class="title is-3 has-text-centered">Abstract</h2><p>Implicit and explicit representations of geometry are central in computer graphics applications and come with pros and cons. With surface sampling being faster on explicit representations and spatial queries being faster on implicit representations, finding efficient conversions between them is a highly desirable property. We present TetraCoder, a single-resolution hash-free adaptive tetrahedral encoding that links an explicit tetrahedral spatial encoder with an underlying implicit signed distance field (SDF). The resulting hybrid implicit-explicit space is continuous piecewise affine (CPWA) by design, yielding an exact correspondence between the implicit SDF and the explicit analytic mesh. TetraCoder&#x27;s design comes with additional perks, in particular: (a) it scales better than multiresolution encoding methods due to its single-resolution optimizable grid, (b) unlike hash-based methods, it is not affected by collisions and (c) it enables fast tetrahedral ray-tracing, geometry and appearance editing, directly through its adaptive tetrahedral scaffold. We demonstrate the versatility of TetraCoder by showing an improvement over state-of-the-art methods on multiple tasks: 2D/3D fitting from images and point clouds, 3D novel view synthesis, 3D reconstruction, and geometry/appearance editing.</p></div></section>
+
+    <section class="section" id="encoder">
+      <div class="container is-max-desktop">
+        <div class="section-heading"><p class="eyebrow">01 / The encoder</p><h2 class="title is-3">Adaptive tetrahedral encoder</h2></div>
+        <div class="encoder-explanation">
+          <p>Each grid vertex stores a position and a learned feature vector. To encode an input point, we first locate the tetrahedron containing it, then use barycentric weights to interpolate the learned vertex features.</p>
+          <p>TetraCoder adapts local vertex capacity through densification, pruning, and vertex movement. Composing the encoding with affine layers and ReLU activations preserves its continuous piecewise-affine structure, enabling analytic mesh retrieval from the learned field.</p>
+        </div>
+        <div class="encoder-demo">
+          <h3 class="subsection-title">Watch the encoding adapt</h3>
+          <figure>
+            <video id="encoder-adaptation-video" src="static/videos/encoder-adaptation.mp4" width="1600" height="800" controls muted loop playsinline preload="metadata" poster="static/images/encoder-adaptation-poster.webp" aria-label="Bunny training: the tetrahedral grid cutaway and reconstructed surface evolve together over 5,000 iterations">
+              Your browser does not support this video. Expand the training states below.
+            </video>
+            <img id="encoder-animation-fallback" src="static/images/encoder-adaptation-poster.webp" alt="Final training state: adapted tetrahedral grid cutaway and reconstructed Bunny at iteration 5,000" width="1600" height="800" hidden>
+
+            <p id="encoder-animation-status" class="status-message" role="status"></p>
+          </figure>
+          <details class="encoder-states">
+            <summary>View the initial and final states side by side</summary>
+            <figure><img src="static/images/encoder-adaptation-states.webp" width="2400" height="800" loading="lazy" alt="Initial grid at iteration 0 with 8,192 vertices; adapted grid at iteration 5,000 with 32,768 vertices; final reconstructed Bunny surface"></figure>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section class="section tinted-section" id="toy-image">
+      <div class="container is-max-desktop">
+        <div class="section-heading"><p class="eyebrow">02 / Toy image fitting</p><h2 class="title is-3">Toy 2D image fitting</h2><p>TetraCoder fits an image into the weights of a small MLP, starting from 2D coordinates alone. It achieves higher PSNR with fewer parameters than multiresolution hash encoding.</p></div>
+        <div class="viewer-toolbar">
+          <div class="segmented scene-switch" role="group" aria-label="Image-fitting scene"><button type="button" data-toy-scene="albert" aria-pressed="true">Albert</button><button type="button" data-toy-scene="summer" aria-pressed="false">Summer</button><button type="button" data-toy-scene="pluto" aria-pressed="false">Pluto</button><button type="button" data-toy-scene="girl" aria-pressed="false">Girl</button></div>
+          <div class="view-switch" role="group" aria-label="Image comparison layout"><button type="button" data-toy-view="split" aria-pressed="true">Swipe</button><button type="button" data-toy-view="side-by-side" aria-pressed="false">Side by side</button></div>
+        </div>
+        <figure class="comparison-figure">
+          <div class="toy-viewer">
+            <div class="toy-metrics">
+              <div><strong>Hash <span class="toy-method-note">Instant-NGP</span></strong><dl><div><dt title="Reported full-image peak signal-to-noise ratio">PSNR ↑</dt><dd><span id="toy-before-psnr">50.31</span> <span class="toy-unit">dB</span></dd></div><div><dt title="Total encoder and decoder parameters">Parameters ↓</dt><dd><span id="toy-before-parameters">5.75</span> <span class="toy-unit" title="Millions">M</span></dd></div></dl></div>
+              <div class="toy-metrics-ours"><strong>TetraCoder <span class="toy-method-note">Ours</span></strong><dl><div><dt title="Reported full-image peak signal-to-noise ratio">PSNR ↑</dt><dd><span id="toy-after-psnr">59.81</span> <span class="toy-unit">dB</span></dd></div><div><dt title="Total encoder and decoder parameters">Parameters ↓</dt><dd><span id="toy-after-parameters">3.61</span> <span class="toy-unit" title="Millions">M</span></dd></div></dl></div>
+            </div>
+            <div id="toy-comparison" class="comparison toy-comparison" data-range="toy-range" data-before-label="Hash" data-after-label="TetraCoder" style="--position:50%" tabindex="0" role="group" aria-label="Image-fitting comparison" aria-describedby="toy-zoom-help comparison-keyboard-help">
+              <div class="comparison-after"><img id="toy-after" src="static/images/toy-albert-tetracoder.webp" width="1024" height="1024" alt="TetraCoder fitted reconstruction of Albert" loading="lazy"><span class="method-label ours">TetraCoder <small>Ours</small></span></div>
+              <div class="comparison-before"><img id="toy-before" src="static/images/toy-albert-hash.webp" width="1024" height="1024" alt="Hash encoding fitted reconstruction of Albert" loading="lazy"><span class="method-label">Hash</span></div>
+              <span class="comparison-divider" aria-hidden="true"><span>‹ ›</span></span>
+            </div>
+          </div>
+          <div class="comparison-range"><label for="toy-range">Hash</label><input id="toy-range" type="range" min="0" max="100" value="50" aria-label="Reveal Hash and TetraCoder image-fitting results"><label for="toy-range">TetraCoder</label><output id="toy-position" for="toy-range" class="sr-only">50%</output></div>
+          <div class="comparison-tools" data-comparison-controls="toy-comparison" role="group" aria-label="Image-fitting zoom controls" hidden>
+            <span>Zoom</span><button type="button" data-zoom-out aria-label="Zoom out">−</button><output data-zoom-value aria-label="Zoom level">100%</output><button type="button" data-zoom-in aria-label="Zoom in">+</button><button type="button" data-zoom-preset="2" aria-pressed="false">2×</button><button type="button" data-zoom-preset="4" aria-pressed="false">4×</button><button type="button" data-zoom-reset>Reset</button>
+          </div>
+          <p class="sr-only" id="toy-zoom-help">Double-click to zoom · Drag to pan when zoomed · Drag the divider to compare</p>
+          <p id="comparison-keyboard-help" class="sr-only">Ctrl/⌘ + scroll also zooms. With the image focused, use + or − to zoom, arrow keys to pan, and 0 or Escape to reset. Both methods stay aligned.</p>
+
+        </figure>
+
+        <p id="toy-status" class="status-message" role="status"></p>
+        <noscript><p class="noscript-note">Enable JavaScript to switch images and use the slider. The Albert results are shown above.</p></noscript>
+      </div>
+    </section>
+
+    <section class="section" id="geometry">
+      <div class="container is-max-desktop">
+        <div class="section-heading"><p class="eyebrow">03 / Geometry-supervised reconstruction</p><h2 class="title is-3">3D point cloud to mesh</h2><p id="geometry-description">Analytic surface reconstruction on five meshes from the Stanford 3D Scanning Repository. Compare TetraSDF Large, Marching Cubes, and TetraCoder.</p></div>
+        <div class="viewer-toolbar">
+          <div class="segmented scene-switch" role="group" aria-label="Reconstruction scene"><button type="button" data-scene="dragon" aria-pressed="true">Dragon</button><button type="button" data-scene="armadillo" aria-pressed="false">Armadillo</button><button type="button" data-scene="bunny" aria-pressed="false">Bunny</button><button type="button" data-scene="happy" aria-pressed="false">Happy Buddha</button><button type="button" data-scene="lucy" aria-pressed="false">Lucy</button></div>
+          <div class="view-switch" role="group" aria-label="Comparison layout"><button type="button" data-view="split" aria-pressed="true">Swipe</button><button type="button" data-view="side-by-side" aria-pressed="false">Side by side</button></div>
+        </div>
+        <div class="baseline-toolbar"><span>Compare with TetraCoder</span><div class="segmented" role="group" aria-label="Comparison method"><button type="button" data-baseline="tetrasdf" aria-pressed="true">TetraSDF</button><button type="button" data-baseline="mc" aria-pressed="false">Marching Cubes</button></div></div>
+        <figure class="comparison-figure">
+          <div id="geometry-comparison" class="comparison" data-range="geometry-range" data-before-label="TetraSDF" data-after-label="TetraCoder" style="--position:50%" tabindex="0" role="group" aria-label="Mesh reconstruction comparison" aria-describedby="geometry-zoom-help comparison-keyboard-help">
+            <div class="comparison-after"><img id="geometry-after" src="static/images/dragon-tetracoder.webp" alt="TetraCoder reconstruction of the Dragon mesh" width="2000" height="1417" loading="lazy"><span class="method-label ours">TetraCoder <small>Ours</small></span></div>
+            <div class="comparison-before"><img id="geometry-before" src="static/images/dragon-tetrasdf.webp" alt="TetraSDF Large reconstruction of the Dragon mesh" width="2000" height="1417" loading="lazy"><div id="geometry-missing" class="comparison-missing" hidden><span>Comparison render unavailable</span></div><span class="method-label">TetraSDF</span></div>
+            <span class="comparison-divider" aria-hidden="true"><span>‹ ›</span></span>
+          </div>
+          <div class="comparison-range"><label for="geometry-range">TetraSDF</label><input id="geometry-range" type="range" min="0" max="100" value="50" aria-label="Reveal TetraSDF and TetraCoder reconstructions"><label for="geometry-range">TetraCoder</label><output id="geometry-position" for="geometry-range" class="sr-only">50%</output></div>
+          <div class="comparison-tools" data-comparison-controls="geometry-comparison" role="group" aria-label="Mesh comparison zoom controls" hidden>
+            <span>Zoom</span><button type="button" data-zoom-out aria-label="Zoom out">−</button><output data-zoom-value aria-label="Zoom level">100%</output><button type="button" data-zoom-in aria-label="Zoom in">+</button><button type="button" data-zoom-preset="2" aria-pressed="false">2×</button><button type="button" data-zoom-preset="4" aria-pressed="false">4×</button><button type="button" data-zoom-reset>Reset</button>
+          </div>
+          <p class="sr-only" id="geometry-zoom-help">Double-click to zoom · Drag to pan when zoomed · Drag the divider to compare</p>
+
+        </figure>
+        <p id="media-status" class="status-message" role="status"></p>
+        <noscript><p class="noscript-note">Enable JavaScript for interactive comparisons. <a href="static/images/dragon-tetrasdf.webp">View TetraSDF</a> and <a href="static/images/dragon-tetracoder.webp">view TetraCoder</a> separately.</p></noscript>
+        <h3 class="subsection-title">Surface quality and extraction</h3>
+        <div id="geometry-results-table" class="table-scroll" tabindex="0" role="region" aria-label="Stanford geometry reconstruction results">
+  <table class="results-table"><caption>Stanford reconstruction · Mean over five meshes</caption>
+    <thead><tr><th scope="col">Method</th><th scope="col">CD ↓<small>× 10⁻³</small></th><th scope="col">Extraction ↓<small>seconds</small></th><th scope="col">Parameters ↓<small>millions</small></th><th scope="col">Delaunay edges ↑<small>%</small></th><th scope="col">Skinny triangles ↓<small>%</small></th><th scope="col">SSDF ↓</th><th scope="col">VSDF ↓</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">TetraSDF Large</th><td>1.718</td><td>2.859</td><td>16.778</td><td>82.37</td><td>19.55</td><td>0.076</td><td>0.078</td></tr>
+      <tr class="ours-row"><th scope="row">TetraCoder</th><td>1.611</td><td>0.446</td><td>5.221</td><td>83.50</td><td>9.14</td><td>0.027</td><td>0.027</td></tr>
+    </tbody></table>
+</div>
+<p class="table-note">Identical geometry supervision and 5,000 training updates. CD: Chamfer Distance. SSDF and VSDF measure mesh–field agreement.</p>
+      </div>
+    </section>
+
+    <section class="section tinted-section" id="appearance">
+      <div class="container is-max-desktop">
+        <div class="section-heading"><p class="eyebrow">04 / Novel view synthesis</p><h2 class="title is-3">3D scene reconstruction from images</h2><p>TetraCoder jointly learns geometry and view-dependent appearance from a collection of RGB images. Its single-level adaptive tetrahedral grid supports both novel-view synthesis and explicit mesh reconstruction within the same representation.</p></div>
+        <div class="appearance-grid">
+          <figure><img src="static/images/novel-view-frog.webp" alt="TetraCoder novel view of the DTU frog, with the paper's detail inset" width="1200" height="850" loading="lazy"></figure>
+          <figure><img src="static/images/novel-view-hotdog.webp" alt="TetraCoder novel view of the NeRF Synthetic hotdog, with the paper's detail inset" width="1200" height="850" loading="lazy"></figure>
+        </div>
+        <div class="dataset-tables"><div><div id="synthetic-results-table" class="table-scroll" tabindex="0" role="region" aria-label="NeRF Synthetic novel view synthesis and reconstruction results">
+  <table class="results-table"><caption>NeRF Synthetic · Novel view synthesis and reconstruction</caption>
+    <thead><tr><th scope="col">Method</th><th scope="col">PSNR ↑<small>dB</small></th><th scope="col">SSIM ↑</th><th scope="col">CD ↓<small>mm</small></th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Tetra-NeRF</th><td>29.71</td><td>0.948</td><td>14.24</td></tr>
+      <tr><th scope="row">NeuMesh++</th><td>32.32</td><td>0.955</td><td><span aria-label="Not reported">—</span></td></tr>
+      <tr><th scope="row">NeuS2</th><td>31.58</td><td>0.953</td><td>4.10</td></tr>
+      <tr><th scope="row">Instant-NGP</th><td>32.75</td><td>0.960</td><td>4.71</td></tr>
+      <tr class="ours-row"><th scope="row">TetraCoder</th><td>33.27</td><td>0.969</td><td>3.93</td></tr>
+    </tbody></table>
+</div>
+</div><div><div id="dtu-results-table" class="table-scroll" tabindex="0" role="region" aria-label="DTU novel view synthesis and reconstruction results">
+  <table class="results-table"><caption>DTU · Novel view synthesis and reconstruction</caption>
+    <thead><tr><th scope="col">Method</th><th scope="col">PSNR ↑<small>dB</small></th><th scope="col">SSIM ↑</th><th scope="col">CD ↓<small>mm</small></th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Tetra-NeRF</th><td>27.09</td><td>0.905</td><td>2.65</td></tr>
+      <tr><th scope="row">NeuMesh++</th><td>28.39</td><td>0.940</td><td><span aria-label="Not reported">—</span></td></tr>
+      <tr><th scope="row">NeuS2</th><td>32.14</td><td>0.938</td><td>0.711</td></tr>
+      <tr><th scope="row">Instant-NGP</th><td>32.27</td><td>0.942</td><td>1.77</td></tr>
+      <tr class="ours-row"><th scope="row">TetraCoder</th><td>32.34</td><td>0.943</td><td>0.705</td></tr>
+    </tbody></table>
+</div>
+</div></div>
+        <p class="table-note">CD: Chamfer Distance. A dash denotes an unreported value.</p>
+      </div>
+    </section>
+
+    <section class="section" id="editing">
+      <div class="container is-max-desktop">
+        <div class="section-heading"><p class="eyebrow">05 / Editing</p><h2 class="title is-3">3D scene editing</h2><p>Starting from a trained scene, TetraCoder supports geometry and appearance editing on the tetrahedral encoder grid, without retraining.</p></div>
+        <figure class="editing-animation">
+          <video id="editing-cycle-video" src="static/videos/editing-cycle.mp4" width="960" height="1030" controls muted loop playsinline preload="metadata" poster="static/images/editing-original.webp" aria-label="Crossfades between the supplied scene renders: fitted scene, appearance editing, geometric editing, and physics simulation involving another 3D object">
+            Your browser does not support this video.
+          </video>
+          <img id="editing-animation-fallback" src="static/images/editing-original.webp" alt="Original Lego reconstruction" width="1600" height="1600" hidden>
+
+          <p id="animation-status" class="status-message" role="status"></p>
+        </figure>
+        <div class="geometry-motion">
+          <div class="geometry-motion-copy">
+            <h3 class="subsection-title">Geometry editing</h3>
+            <p>TetraCoder edits geometry by moving its grid vertices while keeping the learned features, tetrahedral connectivity, and geometry decoder fixed.</p>
+          </div>
+          <figure>
+            <video id="geometry-editing-video" src="static/videos/geometry-editing.mp4" width="1600" height="1600" controls muted loop playsinline preload="metadata" poster="static/images/geometry-editing-poster.webp" aria-label="Geometry editing of the Lego scene: the loader bucket lowers and rises">
+              Your browser does not support this video.
+            </video>
+            <img id="geometry-editing-fallback" src="static/images/geometry-editing-poster.webp" alt="Lego loader reconstruction with its bucket raised" width="1600" height="1600" hidden>
+
+            <p id="geometry-editing-status" class="status-message" role="status"></p>
+          </figure>
+        </div>
+        <h3 class="subsection-title">Local edits, limited spillover</h3>
+        <p class="subsection-intro">Local edits introduce limited changes outside the intended region. Here, the left half is painted red.</p>
+        <figure class="comparison-figure locality-figure">
+          <div class="locality-viewer">
+            <div id="locality-comparison" class="comparison" data-orientation="vertical" data-range="locality-range" data-before-label="Hash encoding" data-after-label="TetraCoder" style="--position:50%" tabindex="0" role="group" aria-label="Local-edit comparison" aria-describedby="locality-zoom-help comparison-keyboard-help"><div class="comparison-after"><img src="static/images/locality-tetracoder.webp" alt="TetraCoder local edit: red left half and preserved canal scene on the right" width="1200" height="733" loading="lazy"><span class="method-label ours">TetraCoder <small>Ours</small></span></div><div class="comparison-before"><img src="static/images/locality-hash.webp" alt="Hash encoding local edit with changes outside the painted left half" width="1200" height="733" loading="lazy"><span class="method-label">Hash encoding</span></div><span class="comparison-divider" aria-hidden="true"><span>↕</span></span></div>
+            <div class="comparison-range locality-control"><label for="locality-range">Hash<br><span>above</span></label><input id="locality-range" type="range" min="0" max="100" value="50" orient="vertical" aria-orientation="vertical" aria-label="Move the divider vertically: Hash above, TetraCoder below"><label for="locality-range">TetraCoder<br><span>below</span></label><output id="locality-position" for="locality-range" class="sr-only">50%</output></div>
+          </div>
+          <div class="comparison-tools" data-comparison-controls="locality-comparison" role="group" aria-label="Local-edit zoom controls" hidden>
+            <span>Zoom</span><button type="button" data-zoom-out aria-label="Zoom out">−</button><output data-zoom-value aria-label="Zoom level">100%</output><button type="button" data-zoom-in aria-label="Zoom in">+</button><button type="button" data-zoom-preset="2" aria-pressed="false">2×</button><button type="button" data-zoom-preset="4" aria-pressed="false">4×</button><button type="button" data-zoom-reset>Reset</button>
+          </div>
+          <p class="sr-only" id="locality-zoom-help">Double-click to zoom · Drag to pan when zoomed · Move the divider up or down to compare</p>
+        </figure>
+        <div id="locality-results-table" class="table-scroll" tabindex="0" role="region" aria-label="Appearance editing error outside the edited region">
+  <table class="results-table"><caption>Appearance editing · Before–after MSE in unpainted regions</caption>
+    <thead><tr><th scope="col">Edited region<small>%</small></th><th scope="col">2D · TetraCoder ↓<small>MSE × 10⁻²</small></th><th scope="col">2D · Hash ↓<small>MSE × 10⁻²</small></th><th scope="col">3D · TetraCoder ↓<small>MSE</small></th><th scope="col">3D · Hash ↓<small>MSE</small></th></tr></thead>
+    <tbody>
+      <tr><th scope="row">20</th><td>0.048</td><td>0.536</td><td>0.000</td><td>0.055</td></tr>
+      <tr><th scope="row">40</th><td>0.040</td><td>0.655</td><td>0.001</td><td>0.139</td></tr>
+      <tr><th scope="row">60</th><td>0.043</td><td>0.942</td><td>0.001</td><td>0.091</td></tr>
+      <tr><th scope="row">80</th><td>0.160</td><td>2.221</td><td>0.003</td><td>0.155</td></tr>
+    </tbody></table>
+</div>
+<p class="table-note">Values are shown at the paper’s reported precision.</p>
+        <h3 class="subsection-title">Editing latency</h3>
+        <div id="editing-speed-table" class="table-scroll" tabindex="0" role="region" aria-label="Editing latency and rendering speed">
+  <table class="results-table"><caption>Scene editing · Latency and rendering throughput</caption>
+    <thead><tr><th scope="col">Method</th><th scope="col">Geometry edit ↓<small>ms</small></th><th scope="col">Appearance edit ↓<small>ms</small></th><th scope="col">Rendering ↑<small>FPS</small></th></tr></thead>
+    <tbody>
+      <tr><th scope="row">NeuMesh</th><td>~99,001</td><td>~5.59 × 10⁶</td><td>~0.01</td></tr>
+      <tr><th scope="row">NeuMesh++</th><td>~1,067</td><td>~1,067</td><td>~15</td></tr>
+      <tr class="ours-row"><th scope="row">TetraCoder</th><td>56.7</td><td>60.4</td><td>~30</td></tr>
+    </tbody></table>
+</div>
+<p class="table-note">Geometry and appearance editing latencies include the edit-update time plus the time to render one 800 × 800 image. Appearance editing refers to texture painting.</p>
+      </div>
+    </section>
+    <section class="section" id="video-showcase" hidden><div class="container is-max-desktop"><div class="section-heading"><h2 class="title is-3">More demonstrations</h2></div><div id="video-grid" class="video-grid"></div></div></section>
+    <section class="section citation-section" id="BibTeX">
+      <div class="container is-max-desktop"><div class="citation-heading"><div><p class="eyebrow">Reference</p><h2 class="title is-3">BibTeX</h2></div><button id="copy-bibtex" class="button is-rounded" type="button">Copy citation</button></div>
+        <pre><code id="bibtex">@misc{dellapietra2026tetracoder,
+  title = {TetraCoder: Adaptive Tetrahedral Encoding for Neural Fields},
+  author = {Daniele Della Pietra and Antonella Rech and
+            Nicola Conci and Nicola Garau},
+  year = {2026},
+  eprint = {2611.18267},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.GR},
+  doi = {10.48550/arXiv.2611.18267},
+  url = {https://arxiv.org/abs/2611.18267}
+}</code></pre><p id="copy-status" class="status-message" role="status"></p>
+      </div>
+    </section>
+  </main>
+  <footer class="footer"><div class="container is-max-desktop"><a class="wordmark" href="#"><img src="static/images/favicon.svg" alt="" width="26" height="26">TetraCoder</a><a href="https://arxiv.org/abs/2611.18267">arXiv:2611.18267 ↗</a></div></footer>
+</body>
+</html>
