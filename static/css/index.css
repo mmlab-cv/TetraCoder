@@ -55,7 +55,6 @@ section { scroll-margin-top: 15px; }
 .paper-teaser > img { width: 100%; height: auto; }
 .paper-teaser figcaption { max-width: 1000px; margin: 22px auto 0; font-size: 14px; text-align: left; color: var(--muted); line-height: 1.8; }
 .paper-teaser figcaption strong { color: var(--ink); }
-.teaser-mobile { display: none; }
 .abstract-section { background: #f7f8f7; padding: 44px 28px; }
 .abstract-section p { font-size: 15px; line-height: 1.9; }
 .abstract-section .title { margin-bottom: 22px; font-size: 28px; }
@@ -214,9 +213,6 @@ section { scroll-margin-top: 15px; }
   .publication-links { gap: 8px; margin-top: 20px; }
   .publication-links .button { font-size: 12px; padding: 0 16px; height: 36px; }
   .section-slim { padding: 0 18px 35px; }
-  .teaser-desktop { display: none; }
-  .teaser-mobile { display: flex; gap: 18px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 14px; }
-  .teaser-mobile img { width: 86%; flex: 0 0 86%; object-fit: contain; scroll-snap-align: center; height: auto; }
   .paper-teaser figcaption { font-size: 12px; margin-top: 15px; }
   .section { padding: 42px 18px; }
   .section-heading { margin-bottom: 25px; }
